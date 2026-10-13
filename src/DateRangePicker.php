@@ -9,7 +9,7 @@ use Stl\DatePicker\Support\Html;
 final class DateRangePicker implements \Stringable
 {
     /**
-     * @param array<string, mixed> $options bootstrap-datepicker options
+     * @param array<string, mixed> $options STL date picker options
      * @param array<string, scalar|null> $fromAttributes
      * @param array<string, scalar|null> $toAttributes
      */
@@ -47,11 +47,11 @@ final class DateRangePicker implements \Stringable
 
         return '<div' . Html::attributes([
             'id' => $this->id(),
-            'class' => 'input-daterange input-group',
+            'class' => 'stl-date-range',
             'data-stl-date-range' => true,
         ]) . '>'
             . $from->render()
-            . '<span class="input-group-addon">' . Html::escape($this->separator) . '</span>'
+            . '<span class="stl-date-range-separator">' . Html::escape($this->separator) . '</span>'
             . $to->render()
             . '</div>';
     }
@@ -63,8 +63,7 @@ final class DateRangePicker implements \Stringable
 
         return '<script>(function(init){if(document.readyState==="loading")'
             . '{document.addEventListener("DOMContentLoaded",init);}else{init();}})(function(){var c=' . $id
-            . ';var e=document.getElementById(c.id);if(e&&window.jQuery&&jQuery.fn.datepicker)'
-            . '{jQuery(e).datepicker(' . $options . ');}});</script>';
+            . ';if(window.StlDatePicker){window.StlDatePicker.createRange(c.id,' . $options . ');}});</script>';
     }
 
     public function __toString(): string

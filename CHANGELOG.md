@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.0.0
+
+- Replaced the jQuery and Bootstrap Datepicker browser dependency with native,
+  dependency-free date controls and STL JavaScript behavior.
+- Added shared CSS design tokens, responsive range layout, light/dark themes,
+  localization hooks, lifecycle events, and range constraint coordination.
+- Added optional Laravel configuration and asset publishing.
+
 All notable changes to this project are documented here.
 
 ## Unreleased

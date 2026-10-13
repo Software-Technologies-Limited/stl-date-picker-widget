@@ -9,7 +9,7 @@ use Stl\DatePicker\Support\Html;
 final class DatePicker implements \Stringable
 {
     /**
-     * @param array<string, mixed> $options bootstrap-datepicker options
+     * @param array<string, mixed> $options STL date picker options
      * @param array<string, scalar|null> $attributes HTML input attributes
      */
     public function __construct(
@@ -32,12 +32,13 @@ final class DatePicker implements \Stringable
     public function render(): string
     {
         $attributes = array_merge($this->attributes, [
-            'type' => 'text',
+            'type' => 'date',
             'id' => $this->id(),
             'name' => $this->name,
             'value' => $this->value,
             'data-stl-date-picker' => true,
             'autocomplete' => $this->attributes['autocomplete'] ?? 'off',
+            'class' => trim(($this->attributes['class'] ?? '') . ' stl-date-picker'),
         ]);
 
         return '<input' . Html::attributes($attributes) . '>';
@@ -50,8 +51,7 @@ final class DatePicker implements \Stringable
 
         return '<script>(function(init){if(document.readyState==="loading")'
             . '{document.addEventListener("DOMContentLoaded",init);}else{init();}})(function(){var c=' . $id
-            . ';var e=document.getElementById(c.id);if(e&&window.jQuery&&jQuery.fn.datepicker)'
-            . '{jQuery(e).datepicker(' . $options . ');}});</script>';
+            . ';if(window.StlDatePicker){window.StlDatePicker.create(c.id,' . $options . ');}});</script>';
     }
 
     public function __toString(): string

@@ -1,0 +1,7 @@
+:root{--stl-control-bg:#fff;--stl-control-text:#172033;--stl-control-border:#cbd5e1;--stl-control-accent:#2855d9;--stl-control-radius:.625rem;--stl-control-shadow:0 0 0 3px rgba(40,85,217,.14);--stl-control-height:2.75rem;--stl-control-font:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.stl-date-picker{box-sizing:border-box;width:100%;min-height:var(--stl-control-height);padding:.55rem .75rem;border:1px solid var(--stl-control-border);border-radius:var(--stl-control-radius);background:var(--stl-control-bg);color:var(--stl-control-text);font:inherit;font-family:var(--stl-control-font)}
+.stl-date-picker:focus{border-color:var(--stl-control-accent);box-shadow:var(--stl-control-shadow);outline:none}
+.stl-date-range{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:.5rem;align-items:center}
+.stl-date-range-separator{color:#64748b;text-align:center}
+[data-stl-theme="dark"]{--stl-control-bg:#0f172a;--stl-control-text:#e2e8f0;--stl-control-border:#475569;--stl-control-accent:#60a5fa}
+@media(max-width:520px){.stl-date-range{grid-template-columns:1fr}.stl-date-range-separator{text-align:left}}

@@ -34,6 +34,9 @@
     "require": {
         "php": "^8.1"
     },
+    "suggest": {
+        "illuminate/support": "Enables Laravel asset and configuration publishing."
+    },
     "autoload": {
         "psr-4": {
             "Stl\\DatePicker\\": "src/"
@@ -41,7 +44,10 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-main": "2.0-dev"
+            "dev-main": "3.0-dev"
+        },
+        "laravel": {
+            "providers": ["Stl\\DatePicker\\Bridge\\Laravel\\DatePickerServiceProvider"]
         }
     },
     "config": {

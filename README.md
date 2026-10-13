@@ -4,9 +4,8 @@ STL Date Picker Widget is a framework-agnostic PHP renderer for date-picker and
 date-range controls. It works in raw PHP, Laravel Blade, Yii views, Symfony
 Twig integrations, and other PHP applications without depending on a framework.
 
-The browser behavior is provided by
-[bootstrap-datepicker](https://github.com/uxsolutions/bootstrap-datepicker).
-The PHP package safely renders the controls and their initialization scripts.
+The browser layer is implemented by STL with native date semantics, vanilla
+JavaScript, and themeable CSS. It has no jQuery, Bootstrap, or CDN dependency.
 
 This project is an independently maintained continuation inspired by
 [`2amigos/yii2-date-picker-widget`](https://github.com/2amigos/yii2-date-picker-widget).
@@ -16,8 +15,7 @@ affiliated with or endorsed by the original maintainers.
 ## Requirements
 
 - PHP 8.1 through 8.5
-- jQuery in the browser
-- Bootstrap CSS if you want the default Bootstrap appearance
+- A modern browser with native date-input support
 
 There are no required PHP framework packages.
 
@@ -29,7 +27,8 @@ composer require software-technologies-limited/stl-date-picker-widget
 
 ## Assets
 
-Render the stylesheet once in your page `<head>` and the scripts after jQuery:
+Publish `src/assets` to a public directory, then render the stylesheet once in
+your page `<head>` and the script near the end of the document:
 
 ```php
 <?php
@@ -43,21 +42,16 @@ $assets = new Assets();
 <?= $assets->scripts() ?>
 ```
 
-The default assets are pinned to bootstrap-datepicker 1.10.1 on jsDelivr. Pass
-a different base URL to `Assets` to use a self-hosted copy:
+The default public URL is `/vendor/stl-date-picker`. Pass a different base URL
+when your application publishes the files elsewhere:
 
 ```php
-$assets = new Assets('/assets/bootstrap-datepicker');
+$assets = new Assets('/assets/stl-date-picker');
 ```
 
-For a locale, load its script once:
-
-```php
-<?= $assets->scripts('sw') ?>
-```
-
-Your application remains responsible for loading jQuery and any Bootstrap CSS
-it uses.
+Laravel users can publish both assets and configuration with
+`php artisan vendor:publish --tag=stl-date-picker-assets` and
+`php artisan vendor:publish --tag=stl-date-picker-config`.
 
 ## Raw PHP
 
@@ -70,9 +64,9 @@ $picker = new DatePicker(
     name: 'appointment_date',
     value: $_POST['appointment_date'] ?? null,
     options: [
-        'autoclose' => true,
-        'format' => 'yyyy-mm-dd',
-        'todayHighlight' => true,
+        'locale' => 'en',
+        'theme' => 'light',
+        'min' => '2026-01-01',
     ],
     attributes: ['class' => 'form-control'],
 );
@@ -98,8 +92,8 @@ $range = new DateRangePicker(
     fromValue: '2026-10-13',
     toValue: '2026-10-20',
     options: [
-        'autoclose' => true,
-        'format' => 'yyyy-mm-dd',
+        'locale' => 'en',
+        'theme' => 'light',
     ],
     fromAttributes: ['class' => 'form-control'],
     toAttributes: ['class' => 'form-control'],
@@ -140,7 +134,7 @@ $picker = new DatePicker(
     name: \yii\helpers\Html::getInputName($model, 'date'),
     value: (string) $model->date,
     attributes: ['class' => 'form-control'],
-    options: ['format' => 'yyyy-mm-dd', 'autoclose' => true],
+    options: ['locale' => 'en', 'theme' => 'light'],
 );
 ?>
 
