@@ -22,5 +22,11 @@ jobs:
           coverage: none
       - run: composer update --no-interaction --prefer-dist
       - run: composer validate --strict
-      - run: composer audit
+      - name: Audit dependencies
+        run: |
+          if composer show --locked --name-only | grep -q .; then
+            composer audit --locked
+          else
+            echo "No third-party dependencies to audit."
+          fi
       - run: find src -name '*.php' -print0 | xargs -0 -n1 php -l
