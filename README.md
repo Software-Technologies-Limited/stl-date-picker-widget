@@ -1,169 +1,181 @@
-Bootstrap DatePicker Widget for Yii2
-====================================
+# STL Date Picker Widget
 
-[![Latest Version](https://img.shields.io/github/tag/2amigos/yii2-date-picker-widget.svg?style=flat-square&label=release)](https://github.com/2amigos/yii2-date-picker-widget/tags)
-[![Software License](https://img.shields.io/badge/license-BSD-brightgreen.svg?style=flat-square)](LICENSE.md)
-[![Build Status](https://img.shields.io/travis/2amigos/yii2-date-picker-widget/master.svg?style=flat-square)](https://travis-ci.org/2amigos/yii2-date-picker-widget)
-[![Coverage Status](https://img.shields.io/scrutinizer/coverage/g/2amigos/yii2-date-picker-widget.svg?style=flat-square)](https://scrutinizer-ci.com/g/2amigos/yii2-date-picker-widget/code-structure)
-[![Quality Score](https://img.shields.io/scrutinizer/g/2amigos/yii2-date-picker-widget.svg?style=flat-square)](https://scrutinizer-ci.com/g/2amigos/yii2-date-picker-widget)
-[![Total Downloads](https://img.shields.io/packagist/dt/2amigos/yii2-date-picker-widget.svg?style=flat-square)](https://packagist.org/packages/2amigos/yii2-date-picker-widget)
+STL Date Picker Widget is a framework-agnostic PHP renderer for date-picker and
+date-range controls. It works in raw PHP, Laravel Blade, Yii views, Symfony
+Twig integrations, and other PHP applications without depending on a framework.
 
+The browser behavior is provided by
+[bootstrap-datepicker](https://github.com/uxsolutions/bootstrap-datepicker).
+The PHP package safely renders the controls and their initialization scripts.
 
-Renders a [Bootstrap DatePicker plugin](http://bootstrapformhelpers.com/datepicker/).
+This project is an independently maintained continuation inspired by
+[`2amigos/yii2-date-picker-widget`](https://github.com/2amigos/yii2-date-picker-widget).
+It preserves the original Git history and BSD-3-Clause license. It is not
+affiliated with or endorsed by the original maintainers.
 
-Installation
-------------
-The preferred way to install this extension is through [composer](http://getcomposer.org/download/).
+## Requirements
 
-Either run
+- PHP 8.1 through 8.5
+- jQuery in the browser
+- Bootstrap CSS if you want the default Bootstrap appearance
+
+There are no required PHP framework packages.
+
+## Installation
 
 ```bash
-$ composer require 2amigos/yii2-date-picker-widget:~1.0
-```
-or add
-
-```json
-"2amigos/yii2-date-picker-widget" : "~1.0"
+composer require software-technologies-limited/stl-date-picker-widget
 ```
 
-to the require section of your application's `composer.json` file.
+## Assets
 
-Usage
------
-The widget comes in two flavors: 
-
-- DatePicker
-- DateRangePicker
-
-**DatePicker**
-
-This widget renders a Bootstrap DatePicker input control. Best suitable for model with date string attribute.
-
-***Example of use with a form***  
-There are two ways of using it, with an `ActiveForm` instance or as a widget setting up its `model` and `attribute`.
+Render the stylesheet once in your page `<head>` and the scripts after jQuery:
 
 ```php
 <?php
-use dosamigos\datepicker\DatePicker;
 
-// as a widget
+use Stl\DatePicker\Assets;
+
+$assets = new Assets();
 ?>
 
-<?= DatePicker::widget([
-    'model' => $model,
-    'attribute' => 'date',
-    'template' => '{addon}{input}',
-        'clientOptions' => [
-            'autoclose' => true,
-            'format' => 'dd-M-yyyy'
-        ]
-]);?>
-
-<?php 
-// with an ActiveForm instance 
-?>
-<?= $form->field($model, 'date')->widget(
-    DatePicker::className(), [
-        // inline too, not bad
-         'inline' => true, 
-         // modify template for custom rendering
-        'template' => '<div class="well well-sm" style="background-color: #fff; width:250px">{input}</div>',
-        'clientOptions' => [
-            'autoclose' => true,
-            'format' => 'dd-M-yyyy'
-        ]
-]);?>
-```  
-***Example of use without a model***
-
-```php
-<?php
-use dosamigos\datepicker\DatePicker;
-?>
-<?= DatePicker::widget([
-    'name' => 'Test',
-    'value' => '02-16-2012',
-    'template' => '{addon}{input}',
-        'clientOptions' => [
-            'autoclose' => true,
-            'format' => 'dd-M-yyyy'
-        ]
-]);?>
+<?= $assets->styles() ?>
+<?= $assets->scripts() ?>
 ```
-**DateRangePicker**  
 
-This widget renders a Bootstrap DateRangePicker Input control. 
+The default assets are pinned to bootstrap-datepicker 1.10.1 on jsDelivr. Pass
+a different base URL to `Assets` to use a self-hosted copy:
 
-***Example of use with a form***  
-The following example works with a model that has two attributes named `date_from` and `date_to`.
+```php
+$assets = new Assets('/assets/bootstrap-datepicker');
+```
+
+For a locale, load its script once:
+
+```php
+<?= $assets->scripts('sw') ?>
+```
+
+Your application remains responsible for loading jQuery and any Bootstrap CSS
+it uses.
+
+## Raw PHP
 
 ```php
 <?php
-use dosamigos\datepicker\DateRangePicker;
-?>
-<?= $form->field($tour, 'date_from')->widget(DateRangePicker::className(), [
-    'attributeTo' => 'date_to', 
-    'form' => $form, // best for correct client validation
-    'language' => 'es',
-    'size' => 'lg',
-    'clientOptions' => [
+
+use Stl\DatePicker\DatePicker;
+
+$picker = new DatePicker(
+    name: 'appointment_date',
+    value: $_POST['appointment_date'] ?? null,
+    options: [
         'autoclose' => true,
-        'format' => 'dd-M-yyyy'
-    ]
-]);?>
-```  
-***Example of use without a model***
-
-```php  
-<?php
-use dosamigos\datepicker\DateRangePicker;
+        'format' => 'yyyy-mm-dd',
+        'todayHighlight' => true,
+    ],
+    attributes: ['class' => 'form-control'],
+);
 ?>
-<?= DateRangePicker::widget([
-    'name' => 'date_from',
-    'value' => '02-16-2012',
-    'nameTo' => 'name_to',
-    'valueTo' => '02-20-2012'
-]);?>
+
+<?= $picker->render() ?>
+<?= $picker->script() ?>
 ```
 
-Testing
--------
+All names, values, IDs, and attributes are HTML-escaped. Options are encoded as
+JSON rather than interpolated into JavaScript.
 
-To test the extension, is better to clone this repository on your computer. After, go to the extensions folder and do
-the following (assuming you have `composer` installed on your computer): 
+## Date range
 
-```bash 
-$ composer install --no-interaction --prefer-source --dev
+```php
+<?php
+
+use Stl\DatePicker\DateRangePicker;
+
+$range = new DateRangePicker(
+    fromName: 'date_from',
+    toName: 'date_to',
+    fromValue: '2026-10-13',
+    toValue: '2026-10-20',
+    options: [
+        'autoclose' => true,
+        'format' => 'yyyy-mm-dd',
+    ],
+    fromAttributes: ['class' => 'form-control'],
+    toAttributes: ['class' => 'form-control'],
+);
+?>
+
+<?= $range->render() ?>
+<?= $range->script() ?>
 ```
-Once all required libraries are installed then do: 
 
-```bash 
-$ vendor/bin/phpunit
+## Laravel Blade
+
+Create the picker in a controller, view model, component, or directly in the
+template. Because the output is already escaped by the package, render it as
+intentional HTML:
+
+```blade
+{!! $picker->render() !!}
+
+@push('scripts')
+    {!! $picker->script() !!}
+@endpush
 ```
 
-I would recommend to have `phpunit` globally installed together with `xdebug` so you can have code coverage analysis too.
+Render `Assets::styles()` and `Assets::scripts()` once from your layout or asset
+pipeline.
 
-Further Information
--------------------
-Please, check the [Bootstrap DatePicker site](http://bootstrap-datepicker.readthedocs.io/en/latest/) documentation for further information about its configuration options. 
+## Yii
 
-Contributing
-------------
+The framework-neutral renderer can be used directly in a Yii view:
 
-Please see [CONTRIBUTING](CONTRIBUTING.md) for details.
+```php
+<?php
 
-Credits
--------
+use Stl\DatePicker\DatePicker;
 
-- [Antonio Ramirez](https://github.com/tonydspaniard)
-- [All Contributors](../../contributors)
+$picker = new DatePicker(
+    name: \yii\helpers\Html::getInputName($model, 'date'),
+    value: (string) $model->date,
+    attributes: ['class' => 'form-control'],
+    options: ['format' => 'yyyy-mm-dd', 'autoclose' => true],
+);
+?>
 
-License
--------
+<?= $picker->render() ?>
+<?= $picker->script() ?>
+```
 
-The BSD License (BSD). Please see [License File](LICENSE.md) for more information.
+Yii is not installed or required by this package.
 
+## Other template engines
 
-> [![2amigOS!](http://www.gravatar.com/avatar/55363394d72945ff7ed312556ec041e0.png)](http://www.2amigos.us)  
-<i>Web development has never been so fun!</i>  
-[www.2amigos.us](http://www.2amigos.us)
+Use the same `render()` and `script()` results as trusted component output in
+Twig or another template engine. The package does not access globals, sessions,
+requests, containers, or framework lifecycle hooks.
+
+## Development checks
+
+```bash
+composer validate --strict
+composer audit
+find src -name '*.php' -print0 | xargs -0 -n1 php -l
+```
+
+GitHub Actions validates the package, audits its dependencies, and checks PHP
+syntax on PHP 8.1, 8.2, 8.3, 8.4, and 8.5.
+
+## Credits
+
+- [Antonio Ramirez](https://github.com/tonydspaniard) and
+  [2amigOS! Consulting Group](https://github.com/2amigos) for the original Yii
+  widget and project history
+- Contributors to the original project
+- Software Technologies Limited, current maintainer
+
+## License
+
+BSD-3-Clause. See [LICENSE.md](LICENSE.md). The original copyright and license
+notice are retained as required by the license.

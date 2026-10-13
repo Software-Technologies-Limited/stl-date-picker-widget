@@ -1,124 +1,68 @@
 <?php
-/**
- * @copyright Copyright (c) 2013-2016 2amigOS! Consulting Group LLC
- * @link http://2amigos.us
- * @license http://www.opensource.org/licenses/bsd-license.php New BSD License
- */
-namespace dosamigos\datepicker;
 
-use yii\helpers\Html;
-use yii\helpers\Json;
-use yii\widgets\InputWidget;
+declare(strict_types=1);
 
-/**
- * DatePicker renders a DatePicker input.
- *
- * @author Antonio Ramirez <amigo.cobos@gmail.com>
- * @link http://www.ramirezcobos.com/
- * @link http://www.2amigos.us/
- * @package dosamigos\datepicker
- */
-class DatePicker extends InputWidget
+namespace Stl\DatePicker;
+
+use Stl\DatePicker\Support\Html;
+
+final class DatePicker implements \Stringable
 {
-    use DatePickerTrait;
-
     /**
-     * @var string the addon markup if you wish to display the input as a component. If you don't wish to render as a
-     * component then set it to null or false.
+     * @param array<string, mixed> $options bootstrap-datepicker options
+     * @param array<string, scalar|null> $attributes HTML input attributes
      */
-    public $addon = '<i class="glyphicon glyphicon-calendar"></i>';
-    /**
-     * @var string the template to render the input.
-     */
-    public $template = '{input}{addon}';
-    /**
-     * @var bool whether to render the input as an inline calendar
-     */
-    public $inline = false;
-
-    /**
-     * @inheritdoc
-     */
-    public function init()
-    {
-        parent::init();
-
-        if ($this->inline) {
-            $this->options['readonly'] = 'readonly';
-            Html::addCssClass($this->options, 'text-center');
+    public function __construct(
+        private readonly string $name,
+        private readonly ?string $value = null,
+        private readonly array $options = [],
+        private readonly array $attributes = [],
+        private readonly ?string $id = null,
+    ) {
+        if ($name === '') {
+            throw new \InvalidArgumentException('The input name cannot be empty.');
         }
-        if ($this->size) {
-            Html::addCssClass($this->options, 'input-' . $this->size);
-            Html::addCssClass($this->containerOptions, 'input-group-' . $this->size);
-        }
-        Html::addCssClass($this->options, 'form-control');
-        Html::addCssClass($this->containerOptions, 'input-group date');
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function run()
+    public function id(): string
     {
-
-        $input = $this->hasModel()
-            ? Html::activeTextInput($this->model, $this->attribute, $this->options)
-            : Html::textInput($this->name, $this->value, $this->options);
-
-        if ($this->inline) {
-            $input .= '<div></div>';
-        }
-        if ($this->addon && !$this->inline) {
-            $addon = Html::tag('span', $this->addon, ['class' => 'input-group-addon']);
-            $input = strtr($this->template, ['{input}' => $input, '{addon}' => $addon]);
-            $input = Html::tag('div', $input, $this->containerOptions);
-        }
-        if ($this->inline) {
-            $input = strtr($this->template, ['{input}' => $input, '{addon}' => '']);
-        }
-        echo $input;
-
-        $this->registerClientScript();
+        return $this->id ?? self::idFromName($this->name);
     }
 
-    /**
-     * Registers required script for the plugin to work as DatePicker
-     */
-    public function registerClientScript()
+    public function render(): string
     {
-        $js = [];
-        $view = $this->getView();
+        $attributes = array_merge($this->attributes, [
+            'type' => 'text',
+            'id' => $this->id(),
+            'name' => $this->name,
+            'value' => $this->value,
+            'data-stl-date-picker' => true,
+            'autocomplete' => $this->attributes['autocomplete'] ?? 'off',
+        ]);
 
-        // @codeCoverageIgnoreStart
-        if ($this->language !== null && $this->language !== 'en') {
-            $this->clientOptions['language'] = $this->language;
-            DatePickerLanguageAsset::register($view)->js[] = 'bootstrap-datepicker.' . $this->language . '.min.js';
-        } else {
-            DatePickerAsset::register($view);
-        }
-        // @codeCoverageIgnoreEnd
-
-        $id = $this->options['id'];
-        $selector = ";jQuery('#$id')";
-
-        if ($this->addon || $this->inline) {
-            $selector .= ".parent()";
-        }
-
-        $options = !empty($this->clientOptions) ? Json::encode($this->clientOptions) : '';
-
-        if ($this->inline) {
-            $this->clientEvents['changeDate'] = "function (e){ jQuery('#$id').val(e.format());}";
-        }
-
-        $js[] = "$selector.datepicker($options);";
-
-        if (!empty($this->clientEvents)) {
-            foreach ($this->clientEvents as $event => $handler) {
-                $js[] = "$selector.on('$event', $handler);";
-            }
-        }
-        $view->registerJs(implode("\n", $js));
+        return '<input' . Html::attributes($attributes) . '>';
     }
 
+    public function script(): string
+    {
+        $id = Html::json(['id' => $this->id()]);
+        $options = Html::json($this->options);
+
+        return '<script>(function(init){if(document.readyState==="loading")'
+            . '{document.addEventListener("DOMContentLoaded",init);}else{init();}})(function(){var c=' . $id
+            . ';var e=document.getElementById(c.id);if(e&&window.jQuery&&jQuery.fn.datepicker)'
+            . '{jQuery(e).datepicker(' . $options . ');}});</script>';
+    }
+
+    public function __toString(): string
+    {
+        return $this->render();
+    }
+
+    private static function idFromName(string $name): string
+    {
+        $id = strtolower(trim((string) preg_replace('/[^A-Za-z0-9_-]+/', '-', $name), '-'));
+
+        return $id !== '' ? $id : 'stl-date-picker';
+    }
 }

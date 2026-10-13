@@ -1,161 +1,74 @@
 <?php
-/**
- * @copyright Copyright (c) 2013-2016 2amigOS! Consulting Group LLC
- * @link http://2amigos.us
- * @license http://www.opensource.org/licenses/bsd-license.php New BSD License
- */
-namespace dosamigos\datepicker;
 
-use yii\base\InvalidConfigException;
-use yii\helpers\Html;
-use yii\helpers\Json;
-use yii\widgets\InputWidget;
+declare(strict_types=1);
 
-/**
- * DateRangePicker renders a DatePicker range input.
- *
- * @author Antonio Ramirez <amigo.cobos@gmail.com>
- * @link http://www.ramirezcobos.com/
- * @link http://www.2amigos.us/
- * @package dosamigos\datepicker
- */
-class DateRangePicker extends InputWidget
+namespace Stl\DatePicker;
+
+use Stl\DatePicker\Support\Html;
+
+final class DateRangePicker implements \Stringable
 {
-    use DatePickerTrait;
-
     /**
-     * @var string the attribute name for date range (to Date)
+     * @param array<string, mixed> $options bootstrap-datepicker options
+     * @param array<string, scalar|null> $fromAttributes
+     * @param array<string, scalar|null> $toAttributes
      */
-    public $attributeTo;
-    /**
-     * @var string the name for date range (to Date)
-     */
-    public $nameTo;
-    /**
-     * @var string the value for date range (to Date value)
-     */
-    public $valueTo;
-    /**
-     * @var array HTML attributes for the date to input
-     */
-    public $optionsTo;
-    /**
-     * @var string the label to. Defaults to 'to'.
-     */
-    public $labelTo = 'to';
-    /**
-     * @var \yii\widgets\ActiveForm useful for client validation of attributeTo
-     */
-    public $form;
-    /**
-     * @var string the template to render. Used internally.
-     */
-    protected $_template = '{inputFrom}<span class="input-group-addon">{labelTo}</span>{inputTo}';
-
-
-    /**
-     * @inheritdoc
-     * @throws \yii\base\InvalidConfigException
-     */
-    public function init()
-    {
-        parent::init();
-        if ((!$this->hasModel() && $this->nameTo === null) || ($this->hasModel() && $this->attributeTo === null)) {
-            // @codeCoverageIgnoreStart
-            throw new InvalidConfigException("Either 'nameTo', or 'model' and 'attributeTo' properties must be specified.");
-            // @codeCoverageIgnoreEnd
+    public function __construct(
+        private readonly string $fromName,
+        private readonly string $toName,
+        private readonly ?string $fromValue = null,
+        private readonly ?string $toValue = null,
+        private readonly array $options = [],
+        private readonly array $fromAttributes = [],
+        private readonly array $toAttributes = [],
+        private readonly string $separator = 'to',
+        private readonly ?string $id = null,
+    ) {
+        if ($fromName === '' || $toName === '') {
+            throw new \InvalidArgumentException('Both date range input names are required.');
         }
-        if ($this->size) {
-            Html::addCssClass($this->options, 'input-' . $this->size);
-            Html::addCssClass($this->optionsTo, 'input-' . $this->size);
-            Html::addCssClass($this->containerOptions, 'input-group-' . $this->size);
-        }
-        Html::addCssClass($this->containerOptions, 'input-group input-daterange');
-        Html::addCssClass($this->options, 'form-control');
-        Html::addCssClass($this->optionsTo, 'form-control');
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function run()
+    public function id(): string
     {
-        if ($this->form) {
-            Html::addCssClass($this->options, 'datepicker-from');
-            Html::addCssClass($this->optionsTo, 'datepicker-to');
-            $inputFrom = $this->form->field(
-                $this->model,
-                $this->attribute,
-                [
-                    'template' => '{input}{error}',
-                    'options' => ['class' => 'input-group datepicker-range'],
-                ]
-            )->textInput($this->options);
-            $inputTo = $this->form->field(
-                $this->model,
-                $this->attributeTo,
-                [
-                    'template' => '{input}{error}',
-                    'options' => ['class' => 'input-group datepicker-range'],
-                ]
-            )->textInput($this->optionsTo);
-        } else {
-            $inputFrom = $this->hasModel()
-                ? Html::activeTextInput($this->model, $this->attribute, $this->options)
-                : Html::textInput($this->name, $this->value, $this->options);
-            $inputTo = $this->hasModel()
-                ? Html::activeTextInput($this->model, $this->attributeTo, $this->optionsTo)
-                : Html::textInput($this->nameTo, $this->valueTo, $this->optionsTo);
+        if ($this->id !== null) {
+            return $this->id;
         }
-        echo Html::tag(
-            'div',
-            strtr(
-                $this->_template,
-                ['{inputFrom}' => $inputFrom, '{labelTo}' => $this->labelTo, '{inputTo}' => $inputTo]
-            ), $this->containerOptions);
 
-        $this->registerClientScript();
+        $base = strtolower(trim((string) preg_replace('/[^A-Za-z0-9_-]+/', '-', $this->fromName), '-'));
+
+        return ($base !== '' ? $base : 'stl-date') . '-range';
     }
 
-    /**
-     * Registers required script for the plugin to work as DateRangePicker
-     */
-    public function registerClientScript()
+    public function render(): string
     {
-        $js = [];
-        $view = $this->getView();
+        $from = new DatePicker($this->fromName, $this->fromValue, [], $this->fromAttributes);
+        $to = new DatePicker($this->toName, $this->toValue, [], $this->toAttributes);
 
-        // @codeCoverageIgnoreStart
-        if($this->language !== null) {
-            $this->clientOptions['language'] = $this->language;
-            DatePickerLanguageAsset::register($view)->js[] = 'bootstrap-datepicker.' . $this->language . '.min.js';
-        } else {
-            DateRangePickerAsset::register($view);
-        }
-        // @codeCoverageIgnoreEnd
-
-        $id = $this->options['id'];
-        $selector = ";jQuery('#$id').parent()";
-        if($this->form && $this->hasModel()) {
-            // @codeCoverageIgnoreStart
-            $selector .= '.parent()';
-            $class = "field-" . Html::getInputId($this->model, $this->attribute);
-            $js[] = "$selector.closest('.$class').removeClass('$class');";
-            // @codeCoverageIgnoreEnd
-        }
-
-        $options = !empty($this->clientOptions) ? Json::encode($this->clientOptions) : '';
-
-        $js[] = "$selector.datepicker($options);";
-
-        // @codeCoverageIgnoreStart
-        if (!empty($this->clientEvents)) {
-            foreach ($this->clientEvents as $event => $handler) {
-                $js[] = "$selector.on('$event', $handler);";
-            }
-        }
-        // @codeCoverageIgnoreEnd
-        $view->registerJs(implode("\n", $js));
+        return '<div' . Html::attributes([
+            'id' => $this->id(),
+            'class' => 'input-daterange input-group',
+            'data-stl-date-range' => true,
+        ]) . '>'
+            . $from->render()
+            . '<span class="input-group-addon">' . Html::escape($this->separator) . '</span>'
+            . $to->render()
+            . '</div>';
     }
 
+    public function script(): string
+    {
+        $id = Html::json(['id' => $this->id()]);
+        $options = Html::json($this->options);
+
+        return '<script>(function(init){if(document.readyState==="loading")'
+            . '{document.addEventListener("DOMContentLoaded",init);}else{init();}})(function(){var c=' . $id
+            . ';var e=document.getElementById(c.id);if(e&&window.jQuery&&jQuery.fn.datepicker)'
+            . '{jQuery(e).datepicker(' . $options . ');}});</script>';
+    }
+
+    public function __toString(): string
+    {
+        return $this->render();
+    }
 }
